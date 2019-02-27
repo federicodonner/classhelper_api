@@ -12,16 +12,13 @@ require '../src/config/externalFunctions.php';
 $app = new \Slim\App;
 
 // Customer routes
-// require '../src/routes/productos.php';
-require '../src/routes/producto.php';
-require '../src/routes/coccion.php';
-require '../src/routes/ingrediente.php';
-require '../src/routes/receta.php';
-require '../src/routes/oauth.php';
-require '../src/routes/usuario.php';
+// require '../src/routes/producto.php';
+// require '../src/routes/coccion.php';
+require '../src/routes/class.php';
+// require '../src/routes/receta.php';
+// require '../src/routes/oauth.php';
+// require '../src/routes/usuario.php';
 require '../src/routes/cors.php';
 
 
 $app->run();
-
-// echo('hla');

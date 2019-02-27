@@ -7,7 +7,7 @@ class db
     private $dbhost = 'localhost';
     private $dbuser = 'root';
     private $dbpass = 'root';
-    private $dbname = 'amerendar_v2';
+    private $dbname = 'classhelper';
 
     // */
     /*
