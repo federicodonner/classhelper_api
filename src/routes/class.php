@@ -66,20 +66,20 @@ $app->get('/api/class/{id}', function (Request $request, Response $response) {
 
 
 
-            $slide = $slides[0];
+            foreach ($slides as $slide) {
+                $activity = $slide->activity;
 
-            $activity = $slide->activity;
+                if ($activity != null) {
+                    $activityId = $activity;
+                    $sql = "SELECT * FROM activity WHERE id = $activityId";
 
-            if ($activity != null) {
-                $activityId = $activity;
-                $sql = "SELECT * FROM activity WHERE id = $activityId";
+                    $slide->c=$sql;
 
-                $slide->c=$sql;
+                    $stmt = $db->query($sql);
+                    $activities = $stmt->fetchAll(PDO::FETCH_OBJ);
 
-                $stmt = $db->query($sql);
-                $activities = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-                $slide->activity = $activities[0];
+                    $slide->activity = $activities[0];
+                }
             }
 
 
