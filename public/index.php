@@ -14,7 +14,9 @@ $app = new \Slim\App;
 
 // Customer routes
 require '../src/routes/class.php';
+require '../src/routes/course.php';
 require '../src/routes/message.php';
+require '../src/routes/student.php';
 require '../src/routes/cors.php';
 
 

@@ -4,8 +4,10 @@ use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
 // Get all the classes
-$app->get('/api/class', function (Request $request, Response $response) {
-    $sql = "SELECT * FROM class";
+$app->get('/api/course', function (Request $request, Response $response) {
+    $sql = "SELECT * FROM course";
+    $now = time();
+    $year = date('Y', $now);
     try {
         // Get db object
         $db = new db();
@@ -14,23 +16,37 @@ $app->get('/api/class', function (Request $request, Response $response) {
 
         // Get a list of all the classes
         $stmt = $db->query($sql);
-        $classes = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $courses = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $coursesForReturn = array();
 
         // For each class, find the subject information and store it in the object
-        foreach ($classes as $class) {
-            $sql = "SELECT * FROM subject WHERE id = $class->subject";
+        foreach ($courses as $course) {
+            if ($course->year == $year) {
+                $courseSubject = $course->subject;
+                $sql = "SELECT * FROM subject WHERE id = '".$courseSubject."'";
 
-            $stmt = $db->query($sql);
-            $subjects = $stmt->fetchAll(PDO::FETCH_OBJ);
+                $stmt = $db->query($sql);
+                $subjects = $stmt->fetchAll(PDO::FETCH_OBJ);
 
-            $class->subject = $subjects[0];
+                $subjectId = $subjects[0]->id;
+
+                $sql = "SELECT * FROM class WHERE subject = '".$subjectId."'";
+                $stmt = $db->query($sql);
+                $classes = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+                $subjects[0]->classes = $classes;
+                $course->subject = $subjects[0];
+
+                array_push($coursesForReturn, $course);
+            }
         }
 
         $db = null;
 
-        // Make the response objecti
-        $classesResponse = array('classes'=>$classes);
-        $newResponse = $response->withJson($classesResponse);
+        // Make the response object
+        $coursesResponse = array('courses'=>$coursesForReturn);
+        $newResponse = $response->withJson($coursesResponse);
         $newResponse = $newResponse->withStatus(201);
         return $newResponse;
     } catch (PDOException $e) {
@@ -39,66 +55,49 @@ $app->get('/api/class', function (Request $request, Response $response) {
 });
 
 
-
-
-// Get single class
-$app->get('/api/class/{id}', function (Request $request, Response $response) {
-    $id = $request->getAttribute('id');
-    $sql = "SELECT * FROM class WHERE id = $id";
-
-    try {
-        // Get db object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
-
-        $stmt = $db->query($sql);
-        $class = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-
-        // Verify that the class exists
-        if (!empty($class)) {
-            // If it exists, find all the slides from the class
-            $sql = "SELECT * FROM slide WHERE class = $id";
-
-            $stmt = $db->query($sql);
-            $slides = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-
-
-            $slide = $slides[0];
-
-            $activity = $slide->activity;
-
-            if ($activity != null) {
-                $activityId = $activity;
-                $sql = "SELECT * FROM activity WHERE id = $activityId";
-
-                $slide->c=$sql;
-
-                $stmt = $db->query($sql);
-                $activities = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-                $slide->activity = $activities[0];
-            }
-
-
-            $db = null;
-            // Store them in the class object
-            $class[0]->slides = $slides;
-
-            $classResponse = $class[0];
-            $newResponse = $response->withJson($classResponse);
-            $newResponse = $newResponse->withStatus(201);
-            return $newResponse;
-        } else {
-            return respondWithError($response, 'Id incorrecto', 401);
-        }
-    } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
-    }
-});
-
+//
+//
+// // Get single class
+// $app->get('/api/course/{id}', function (Request $request, Response $response) {
+//     $id = $request->getAttribute('id');
+//
+//     $sql = "SELECT * FROM class WHERE id = $id";
+//
+//     try {
+//         // Get db object
+//         $db = new db();
+//         // Connect
+//         $db = $db->connect();
+//
+//         $stmt = $db->query($sql);
+//         $class = $stmt->fetchAll(PDO::FETCH_OBJ);
+//
+//         // Verify that the class exists
+//         if (!empty($class)) {
+//
+//             // If it exists, find all the slides from the class
+//             $sql = "SELECT * FROM slide WHERE class = $id";
+//
+//             $stmt = $db->query($sql);
+//             $slides = $stmt->fetchAll(PDO::FETCH_OBJ);
+//
+//             $db = null;
+//
+//             // Store them in the class object
+//             $class[0]->slides = $slides;
+//
+//             $classResponse = $class[0];
+//             $newResponse = $response->withJson($classResponse);
+//             $newResponse = $newResponse->withStatus(201);
+//             return $newResponse;
+//         } else {
+//             return respondWithError($response, 'Id incorrecto', 401);
+//         }
+//     } catch (PDOException $e) {
+//         echo '{"error":{"text": '.$e->getMessage().'}}';
+//     }
+// });
+//
 
 //
 // // Add ingredient
